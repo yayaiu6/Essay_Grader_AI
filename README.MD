@@ -53,7 +53,7 @@ The main files in the project include:
 - **Technologies Used**:
   - **Streamlit**: For creating interactive web interfaces.
   - **SQLite**: Lightweight database for storing data.
-  - **OpenAI**: For evaluating short-answer questions using models like GPT-4o-mini.
+  - **OpenAI**: For evaluating short-answer questions using models like GPT-4.1
   - **Python**: Core programming language.
 - **Security**:
   - Passwords are hashed using SHA-256 (could be improved with bcrypt).
