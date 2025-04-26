@@ -103,4 +103,4 @@ You can try the project directly via the following link:
 This project represents a significant effort to create a practical and innovative solution for education. I hope it makes an impact at the Microsoft Hackathon, and I welcome any feedback or suggestions for improvement!
 
 **Developer**: Yahya Mahrouf  
-**Connect with Me**: [LinkedIn](https://www.linkedin.com/in/yahya-mahrouf/) | [GitHub](https://github.com/yayaiu6/)
+**Connect with Me**: [LinkedIn](https://www.linkedin.com/in/yahya-mahrouf/) | [GitHub](https://github.com/yayaiu6/) | yahyamahroof35@gmail.com
