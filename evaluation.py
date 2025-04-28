@@ -1,36 +1,44 @@
-import openai
-import env
+import os
+from openai import AzureOpenAI
 from typing import Dict, Any
 
-# This function uses OpenAI to classify questions into academic subjects
+# Azure OpenAI configuration
+ENDPOINT = os.getenv("ENDPOINT_URL", "https://yahya-ma1c3o0m-eastus2.openai.azure.com/")
+API_KEY = os.getenv("AZURE_OPENAI_API_KEY", "your_azure_openAI_KEY❤️")
+API_VERSION = "2025-01-01-preview"
+DEPLOYMENT_GPT4 = os.getenv("DEPLOYMENT_NAME_GPT4", "gpt-4.1")
+
 def detect_subject(question: str) -> str:
-    """Detect the subject of a question using Open AI."""
-    client = openai.Client(api_key=env.my_key)
-    # Prompt engineering to ensure accurate subject classification
+    """Detect the subject of a question using Azure OpenAI."""
+    client = AzureOpenAI(
+        azure_endpoint=ENDPOINT,
+        api_key=API_KEY,
+        api_version=API_VERSION
+    )
     prompt = f"""
     You are an expert in educational content classification. Based on the question provided, identify the academic subject it belongs to. Choose from the following subjects: Mathematics, Science, History, Language, Geography, or Other. Provide only the subject name as the output.
-
     Question: {question}
     """
     try:
-        # Using GPT-4.1 mini model for efficient subject detection
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model=DEPLOYMENT_GPT4,
             messages=[{"role": "system", "content": prompt}],
             max_tokens=10
         )
         subject = response.choices[0].message.content.strip()
         return subject
     except Exception:
-        return "Other"  # Fallback to generic criteria if classification fails
+        return "Other"
 
 def evaluate_answer(question: str, student_answer: str, reference: str) -> Dict[str, Any]:
-    """Evaluate a student's answer using Open AI with subject-specific criteria."""
-    # First detect the subject to apply appropriate evaluation criteria
+    """Evaluate a student's answer using Azure OpenAI with subject-specific criteria."""
     subject = detect_subject(question)
-    client = openai.Client(api_key=env.my_key)
+    client = AzureOpenAI(
+        azure_endpoint=ENDPOINT,
+        api_key=API_KEY,
+        api_version=API_VERSION
+    )
     
-    # Define subject-specific evaluation criteria for fair assessment
     subject_criteria = {
         "Mathematics": """
         - Focus on correctness of calculations and logic.
@@ -62,68 +70,70 @@ def evaluate_answer(question: str, student_answer: str, reference: str) -> Dict[
         """
     }
 
-    # Select appropriate criteria based on detected subject
     criteria = subject_criteria.get(subject, subject_criteria["Other"])
 
-    # Construct a detailed prompt for the AI evaluator
     prompt = f"""
     You are an intelligent teacher specialized in educational assessment for {subject}. Evaluate the student's answer based on the following criteria:
     {criteria}
-
-    # Scoring guidelines (8-10: excellent, 5-7: satisfactory, 0-4: needs improvement)
     Your evaluation should be based on the following scale:
     - 8 to 10 points for answers that are fully accurate, clear, and complete in relation to the reference answer.
     - 5 to 7 points for answers that are partially correct with minor errors or omissions, but still convey the main idea effectively.
     - 0 to 4 points for answers that are incorrect, off-topic, or fail to address the question.
+    Output Format:
+    Score: [X/10]
+    Feedback: [Detailed feedback]
+    Guidelines:
+    - If the answer is substantially correct, even with slight differences in wording or phrasing, assess it fairly as correct or partially correct.
+    - Do not penalize for minor differences in expression, as long as the main idea is conveyed clearly and accurately.
+    Question: {question}
+    Reference Answer: {reference}
+    Student Answer: {student_answer}
     """
     try:
-        # Use GPT-4 mini model for detailed evaluation
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=DEPLOYMENT_GPT4,
             messages=[{"role": "system", "content": prompt}],
             max_tokens=150
         )
-        # Parse the AI response into structured feedback
         response_text = response.choices[0].message.content
         lines = response_text.split("\n")
         result = {"correct": False, "score": 0, "feedback": ""}
-        
-        # Extract score and feedback from the response
         for line in lines:
             if line.startswith("Score:"):
                 result["score"] = int(line.split(":")[1].strip().split("/")[0])
-                result["correct"] = result["score"] >= 8  # Consider scores 8+ as correct
+                result["correct"] = result["score"] >= 8
             elif line.startswith("Feedback:"):
                 result["feedback"] = line.split(":")[1].strip()
         return result
     except Exception as e:
-        print(f"Evaluation error: {e}")
+        print(f"Evaluation error: {e
+}")
         return {"correct": False, "score": 0, "feedback": "Error in evaluation"}
 
-# Function to generate comprehensive feedback report for teachers
 def generate_student_feedback(student_name: str, answers: Dict[str, str], evaluations: Dict[str, Dict[str, Any]], total_score: int, max_score: int) -> str:
-    """Generate detailed feedback for a student using Open AI."""
-    client = openai.Client(api_key=env.my_key)
+    """Generate detailed feedback for a student using Azure OpenAI."""
+    client = AzureOpenAI(
+        azure_endpoint=ENDPOINT,
+        api_key=API_KEY,
+        api_version=API_VERSION
+    )
     
-    # Create a comprehensive prompt including all student data
     prompt = f"""
     You are an expert in evaluating student responses. Based on the following data, provide a comprehensive and short report on the student's performance for the teacher. The report should include:
     - A brief evaluation of the student's overall performance.
     - Suggestions for improvement based on specific weaknesses.
-
     Student Name: {student_name}
     Total Result: {total_score}/{max_score}
     """
-    
-    # Add individual question analysis to the prompt
     for q_text, answer in answers.items():
         eval_data = evaluations.get(q_text, {"score": 0, "feedback": "Not evaluated"})
         prompt += f"- Question: {q_text}\n  Student Answer: {answer}\n  Score: {eval_data['score']}/10\n  Feedback: {eval_data['feedback']}\n"
 
+    prompt += "Provide the feedback in a clear and concise format, suitable for a teacher to review."
+
     try:
-        # Generate personalized feedback using GPT-4 nano
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model=DEPLOYMENT_GPT4,
             messages=[{"role": "system", "content": prompt}],
             max_tokens=100
         )
