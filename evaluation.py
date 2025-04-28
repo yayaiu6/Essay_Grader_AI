@@ -5,7 +5,7 @@ from typing import Dict, Any
 # Azure OpenAI configuration
 # Retrieve configuration details for Azure OpenAI from environment variables,
 # with default values provided for local testing or fallback.
-ENDPOINT = os.getenv("ENDPOINT_URL", "https://yahya-ma1c3o0m-eastus2.openai.azure.com/")
+ENDPOINT = os.getenv("ENDPOINT_URL", "https://your_account.openai.azure.com/")
 API_KEY = os.getenv("AZURE_OPENAI_API_KEY", "your_azure_openAI_KEY❤️")
 API_VERSION = "2025-01-01-preview"
 DEPLOYMENT_GPT4 = os.getenv("DEPLOYMENT_NAME_GPT4", "gpt-4.1")
